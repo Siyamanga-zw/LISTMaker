@@ -1,69 +1,129 @@
- let inputName1 = document.querySelector('#inputName1');
-    let addList = document.querySelector('#addList');
-    let output = document.querySelector('#todo');
-    let Arr = [];
+let addItem = document.querySelector(".abtn");
+let sortItem = document.querySelector(".sbtn")
+let itemInput = document.querySelector(".i-screen")
+let output = document.querySelector(".lis")
+let clientItems = []
+let tempID =1;
+let dotoDelete;
+let checkBox;
+let editbtn;
 
-    // ADD BUTTON
-    addList.addEventListener("click", (event) => {
-        event.preventDefault();
-        if (inputName1.value) {
-            Arr.push(inputName1.value);
-            inputName1.value = "";
-            inputName1.style.color = 'black'; // Reset the color to black
-        } else {
-            inputName1.style.color = 'red';
-        }
+// Add Items
+addItem.addEventListener("click", (event)=>{
+    event.preventDefault();
+    if(itemInput.value == ""){
+        alert("input is empty!")
+    }else{
+        clientItems.push({
+            id: tempID,
+            name: itemInput.value,
+            completed: false,
+            date: new Date()
+        
+        })
+        tempID++;
+        clientItems.value = "";
 
-        updateTodoList();
-    });
-
-    // Update the Todo List
-    function updateTodoList() {
-        localStorage.setItem("names", JSON.stringify(Arr));
-        output.innerHTML = "";
-        Arr.forEach((name) => {
-            output.innerHTML += `
-            <li>
-                <input type="checkbox" onclick="toggleLineThrough(this)">
-                <p class="itemName">${name}</p> 
-                <button class="edit" onclick="editItem('${name}')">Edit</button>
-                <button class="deleteButton" onclick="deleteItem('${name}')">X</button>
-            </li>`;
-        });
+        console.log(clientItems);
+        renderList();
     }
+})
 
-    // Delete Item
-    function deleteItem(name) {
-        let index = Arr.indexOf(name);
-        if (index !== -1) {
-            Arr.splice(index, 1);
-            updateTodoList();
+// Sort Button
+sortItem.addEventListener("click", (event)=>{
+    event.preventDefault();
+    clientItems = clientItems.sort((a,b) => {
+        if (a.name < b.name){
+            return -1;
+        }else {
+            return 1;
+        
         }
-    }
+        return 0;
+    })
+renderList()
+})
 
-    // Edit Item
-    function editItem(name) {
-        let editedName = prompt("Edit item:", name);
-        if (editedName !== null && editedName.trim() !== "") {
-            let index = Arr.indexOf(name);
-            if (index !== -1) {
-                Arr[index] = editedName;
-                updateTodoList();
+
+// Delete button
+function  deleteButtons(){
+    dotoDelete = [...document.querySelectorAll(".close-btn")];
+
+    dotoDelete.forEach((item) => {
+        item.addEventListener('click', deleteItem)
+        
+    })
+}
+function deleteItem() {
+    let startPoint = dotoDelete.indexOf(event.target);
+            clientItems.splice(startPoint, 1);
+            localStorage.setItem("itemlist", JSON.stringify(clientItems))
+            renderList();
+}
+
+// Checkbox 
+function checkBoxes(){
+    checkBox = [...document.querySelectorAll('.checkme')];
+    checkBox.forEach((item) => {
+        item.addEventListener('click', checkBoxs)
+    })
+}
+function checkBoxs() {
+    let indexPosition = checkBox.indexOf(event.target);
+            if(clientItems[indexPosition].completed === true) {
+                clientItems[indexPosition].completed = false;
             }
-        }
+            else {
+                clientItems[indexPosition].completed = true
+            }
+            renderList();
+}
+
+// Edit button 
+function editItem(){
+    editbtn = [...document.querySelectorAll('.edit-btn')];
+    editbtn.forEach((item)=>{
+        item.addEventListener('click', editTodoItem)
+    })
+    }
+    function editTodoItem(){
+        let newItem = prompt('Enter new Item:');
+        let index = editbtn.indexOf(event.target);
+        clientItems[index].name = newItem;
+        localStorage.setItem("itemlist", JSON.stringify(clientItems))
+        renderList();
     }
 
-    // checked function
-    function toggleLineThrough(element) {
-        if (element.checked) {
-            element.parentNode.style.textDecoration = "line-through";
-        } else {
-            element.parentNode.style.textDecoration = "none";
-        }
-    }
-
-    // sort function
-    function renderTodoList() {
-        Arr.sort(); // Sort the array alphabetically
-        updateTodoList();
-    }
+// list from client
+function renderList(){
+    output.innerHTML = ""
+    clientItems.forEach((items)=> {
+        if(items.completed === true){
+            output.innerHTML +=`
+            <div id="input">
+                <input type="checkbox" class="checkme" checked>
+                <p id="ptag" class="jsptag">${items.name}</p>
+                <div>
+                <button class="edit-btn">edit</button>
+                <button type="button" id="close-btn${items.id}" class="close-btn">&times</button>
+                </div>
+            </div>
+                `
+    }else {
+        output.innerHTML +=`
+            <div id="input">
+                <input type="checkbox" class="checkme">
+                <p id="ptag">${items.name}</p>
+                <div>
+                <button class="edit-btn">edit</button>
+                <button type="button" id="close-btn${items.id}" class="close-btn">&times</button>
+                </div>
+            </div>
+                `
+            }
+})
+    deleteButtons();
+    checkBoxes();
+    editItem()
+}
+renderList()
